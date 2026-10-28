@@ -229,6 +229,13 @@ h2{font-weight:700;letter-spacing:-.01em}
 /* ===== 모둠 ===== */
 .team{background:var(--sunken);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px}
 .team-q{margin:0;font-size:1.15rem;font-weight:700;text-align:center}
+.me{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.6fr;gap:8px}
+.me label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;font-weight:700;color:var(--ink-2);font-family:var(--title)}
+.me input,.me select{width:100%;min-width:0;border:2px solid var(--line);border-radius:14px;padding:10px 10px;font-size:1.05rem;font-weight:600;background:var(--surface);color:var(--ink)}
+.me input:focus,.me select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.me .bad{border-color:var(--w1);background:color-mix(in srgb,var(--w1) 8%,var(--surface))}
+.me-err{margin:0;text-align:center;color:var(--w1);font-weight:700;font-size:.92rem;min-height:1.2em}
+@media (max-width:620px){.me{grid-template-columns:1fr 1fr 1fr}.me label:first-child{grid-column:1/-1}.me label:last-child{grid-column:1/-1}}
 .team-btns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .team-btn{border:2px solid transparent;border-radius:18px;padding:12px 6px;font-size:1.25rem;font-weight:700;color:#fff;background:var(--tc);box-shadow:0 4px 0 color-mix(in srgb,var(--tc) 65%,#000);transition:transform .1s}
 .team-btn:hover{transform:translateY(-2px)}
@@ -368,9 +375,18 @@ h2{font-weight:700;letter-spacing:-.01em}
       </li>
     </ol>
     <div class="team" id="team">
-      <p class="team-q">우리 모둠을 골라요</p>
+      <p class="team-q">① 나를 소개해요</p>
+      <div class="me">
+        <label>학교<input id="meSchool" placeholder="예: 부천북초" maxlength="20" autocomplete="off"></label>
+        <label>학년<select id="meGrade"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+        <label>반<input id="meClass" inputmode="numeric" maxlength="2" placeholder="1"></label>
+        <label>번호<input id="meNo" inputmode="numeric" maxlength="2" placeholder="1"></label>
+        <label>이름<input id="meName" maxlength="8" placeholder="이름" autocomplete="off"></label>
+      </div>
+      <p class="me-err" id="meErr"></p>
+      <p class="team-q">② 우리 모둠을 골라요</p>
       <div class="team-btns" id="teamBtns"></div>
-      <p class="team-note">같은 모둠 친구들이 담은 낱말이 바구니에 함께 모여요.</p>
+      <p class="team-note">같은 학교·학년·반·모둠 친구들이 담은 낱말이 바구니에 함께 모여요.</p>
       <button class="team-teacher" id="teacherLink" type="button">선생님: 우리 반 링크 만들기</button>
       <div class="team-link" id="linkBox" hidden><input id="linkText" readonly aria-label="우리 반 링크"><button class="btn" id="copyLink" type="button">복사</button></div>
     </div>
@@ -560,9 +576,21 @@ const QP=new URLSearchParams(location.search);
 let CLASS=(QP.get('c')||'').replace(/[^a-z0-9]/gi,'').slice(0,16).toLowerCase();
 const TEAM_COLORS=['#2f6fe4','#e0407a','#16955c','#7b4bd8','#ea7d00','#0896ab','#c2410c','#4d7c0f'];
 let team=null, es=null, gone=new Set();
-const topic=()=>`jamo-play-${CLASS||'open'}-t${team}`;
+let me=null;
+const h32=(str,seed)=>{let h=seed>>>0;for(const ch of str){h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0}return h.toString(36)};
+const normSchool=v=>v.replace(/\s+/g,'').replace(/초등학교$|학교$/,'').replace(/초$/,'')+'초';
+const roomKey=()=>{const k=normSchool(me.school)+'|'+me.grade+'|'+me.cls;return (CLASS?CLASS+'-':'')+h32(k,2166136261)+h32(k,99991)};
+const topic=()=>`jamo-play-${roomKey()}-t${team}`;
+function readMe(){
+  const v={school:$('meSchool').value.trim(),grade:$('meGrade').value,cls:$('meClass').value.replace(/\D/g,''),no:$('meNo').value.replace(/\D/g,''),name:$('meName').value.trim()};
+  const miss=[['meSchool',v.school],['meGrade',v.grade],['meClass',v.cls],['meNo',v.no],['meName',v.name]].filter(([id,x])=>!x);
+  ['meSchool','meGrade','meClass','meNo','meName'].forEach(id=>$(id).classList.toggle('bad',miss.some(m=>m[0]===id)));
+  if(miss.length){$('meErr').textContent='빈칸을 모두 채워 주세요.';$(miss[0][0]).focus();return null}
+  $('meErr').textContent='';try{localStorage.setItem('jp-me',JSON.stringify(v))}catch(e){}return v;
+}
+try{const v=JSON.parse(localStorage.getItem('jp-me')||'null');if(v){$('meSchool').value=v.school||'';$('meGrade').value=v.grade||'';$('meClass').value=v.cls||'';$('meNo').value=v.no||'';$('meName').value=v.name||''}}catch(e){}
 function pub(op){
-  if(!team)return; op.dev=DEV;
+  if(!team)return; op.dev=DEV; op.nm=me?me.name:'';
   fetch(SERVER+'/'+topic(),{method:'POST',body:JSON.stringify(op)}).catch(()=>toast('인터넷 연결을 확인해 주세요'));
 }
 function applyOp(op){
@@ -574,8 +602,9 @@ function applyOp(op){
 }
 function parse(line){try{const m=JSON.parse(line);if(m.event&&m.event!=='message')return null;return JSON.parse(m.message)}catch(e){return null}}
 function setChip(ok){const c=$('teamChip');c.hidden=false;c.style.setProperty('--tc',team?TEAM_COLORS[team-1]:'#7a8599');
-  c.className='team-chip'+(ok||!team?'':' off');c.innerHTML='';const i=document.createElement('i');if(team)c.append(i);c.append(document.createTextNode(team?`${team}모둠`:'혼자 하기'))}
+  c.className='team-chip'+(ok||!team?'':' off');c.innerHTML='';const i=document.createElement('i');if(team)c.append(i);c.append(document.createTextNode(`${me.grade}-${me.cls} ${me.name} · `+(team?`${team}모둠`:'혼자')))}
 async function joinTeam(n){
+  const v=readMe();if(!v)return;me=v;
   if(es){es.close();es=null}
   team=n; try{sessionStorage.setItem('jp-team',String(n))}catch(e){}
   state.words=[];state.placed=[];gone=new Set();
@@ -591,7 +620,7 @@ async function joinTeam(n){
   es=new EventSource(SERVER+'/'+topic()+'/sse?since='+Math.floor(Date.now()/1000));
   es.onopen=()=>setChip(true);
   es.onerror=()=>setChip(false);
-  es.onmessage=e=>{const op=parse(e.data);if(op&&op.dev!==DEV&&applyOp(op)){renderAll();if(op.k==='add')toast('모둠 친구가 낱말을 담았어요')}};
+  es.onmessage=e=>{const op=parse(e.data);if(op&&op.dev!==DEV&&applyOp(op)){renderAll();if(op.k==='add')toast(op.nm?`${op.nm} 친구가 낱말을 담았어요`:'모둠 친구가 낱말을 담았어요')}};
 }
 for(let i=1;i<=8;i++){const b=document.createElement('button');b.type='button';b.className='team-btn';b.dataset.n=i;b.style.setProperty('--tc',TEAM_COLORS[i-1]);b.textContent=`${i}모둠`;b.onclick=()=>joinTeam(i);$('teamBtns').append(b)}
 {const b=document.createElement('button');b.type='button';b.className='team-btn team-solo';b.dataset.n=0;b.textContent='혼자 할래요';b.onclick=()=>joinTeam(0);$('teamBtns').append(b)}
