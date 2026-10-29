@@ -387,8 +387,6 @@ h2{font-weight:700;letter-spacing:-.01em}
       <p class="team-q">② 우리 모둠을 골라요</p>
       <div class="team-btns" id="teamBtns"></div>
       <p class="team-note">같은 학교·학년·반·모둠 친구들이 담은 낱말이 바구니에 함께 모여요.</p>
-      <button class="team-teacher" id="teacherLink" type="button">선생님: 우리 반 링크 만들기</button>
-      <div class="team-link" id="linkBox" hidden><input id="linkText" readonly aria-label="우리 반 링크"><button class="btn" id="copyLink" type="button">복사</button></div>
     </div>
     <div class="dialog-foot" id="helpFoot" hidden><button class="btn primary lg" id="closeHelp" type="button">계속하기</button></div>
   </div>
@@ -625,11 +623,6 @@ async function joinTeam(n){
 for(let i=1;i<=8;i++){const b=document.createElement('button');b.type='button';b.className='team-btn';b.dataset.n=i;b.style.setProperty('--tc',TEAM_COLORS[i-1]);b.textContent=`${i}모둠`;b.onclick=()=>joinTeam(i);$('teamBtns').append(b)}
 {const b=document.createElement('button');b.type='button';b.className='team-btn team-solo';b.dataset.n=0;b.textContent='혼자 할래요';b.onclick=()=>joinTeam(0);$('teamBtns').append(b)}
 $('teamChip').onclick=()=>$('openHelp').click();
-$('teacherLink').onclick=()=>{
-  if(!CLASS){CLASS=Math.random().toString(36).slice(2,8);const u=new URL(location.href);u.searchParams.set('c',CLASS);history.replaceState(null,'',u)}
-  const u=new URL(location.href);u.search='?c='+CLASS;u.hash='';$('linkText').value=u.toString();$('linkBox').hidden=false;$('linkText').select();
-};
-$('copyLink').onclick=()=>{navigator.clipboard?.writeText($('linkText').value).then(()=>toast('링크를 복사했어요'),()=>{$('linkText').select()})};
 $('help').addEventListener('click',e=>{if(e.target===$('help'))$('closeHelp').click()});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(!$('help').hidden){$('closeHelp').click();return}if(!$('show').hidden){$('closeShow').click();return}}
