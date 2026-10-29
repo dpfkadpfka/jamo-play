@@ -162,6 +162,8 @@ button.cell.filled:hover::after{content:"×";position:absolute;top:3px;right:6px
 .word{display:flex;align-items:center;gap:10px;background:var(--surface);color:var(--ink);border-radius:14px;padding:10px 8px 10px 14px}
 .word .txt{flex:1;min-width:0;font-weight:800;font-size:clamp(1.8rem,3vw,2.3rem);line-height:1.15;overflow-wrap:anywhere;letter-spacing:-.01em}
 .word .txt span{color:var(--wc)}
+.word .who{flex:none;font-family:var(--title);font-size:.78rem;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--brand-soft);color:var(--brand);white-space:nowrap}
+.word.mine .who{background:color-mix(in srgb,var(--accent) 35%,var(--surface));color:#6b4a00}
 .word .num{font-weight:700;font-size:.85rem;color:var(--muted);min-width:1.4em;text-align:right;font-variant-numeric:tabular-nums}
 .word.new{animation:land .45s cubic-bezier(.2,1.4,.4,1)}
 @keyframes land{from{transform:translateY(-14px) scale(.9);opacity:0}to{transform:none;opacity:1}}
@@ -507,14 +509,20 @@ function renderMade(fresh){
   const ul=$('madeList');ul.replaceChildren();
   $('count').firstChild.nodeValue=String(state.made.length);
   if(!state.made.length){ul.append(emptyBox('아직 만든 낱말이 없어요','글자를 원고지에 놓고 낱말 완성!을 누르면 여기에 모여요.','img/empty-made.webp'));return}
+  $('h-wall').textContent=team?`${team}모둠이 만든 낱말`:'내가 만든 낱말';
+  $('clearMade').textContent=team?'내 낱말 지우기':'모두 지우기';
   state.made.map((w,i)=>({w,i})).reverse().forEach(({w,i},n)=>{
-    const li=document.createElement('li');li.className='word'+(fresh&&n===0?' new':'');
+    const li=document.createElement('li');li.className='word'+(w.mine?' mine':'')+(fresh&&n===0?' new':'');
     const num=document.createElement('span');num.className='num';num.textContent=i+1;
     li.append(num,wordNode('txt',w));
-    const x=document.createElement('button');x.className='x';x.type='button';x.textContent='×';
-    x.setAttribute('aria-label',w.letters.map(l=>l.ch).join('')+' 지우기');
-    x.onclick=()=>{state.made.splice(i,1);renderMade()};
-    li.append(x);ul.append(li);
+    if(team){const who=document.createElement('span');who.className='who';who.textContent=w.mine?'나':(w.nm||'친구');li.append(who)}
+    if(w.mine||!team){
+      const x=document.createElement('button');x.className='x';x.type='button';x.textContent='×';
+      x.setAttribute('aria-label',w.letters.map(l=>l.ch).join('')+' 지우기');
+      x.onclick=()=>{goneMade.add(w.id);state.made=state.made.filter(o=>o.id!==w.id);renderMade();pub({k:'unmade',id:w.id})};
+      li.append(x);
+    }
+    ul.append(li);
   });
 }
 function renderAll(){renderWords();renderTiles();renderBoard();renderMade()}
@@ -542,7 +550,7 @@ function armButton(btn,label,action){
   };
 }
 armButton($('clearWords'),'바구니 비우기',()=>{state.words.forEach(w=>gone.add(w.id));state.words=[];state.placed=[];renderAll();pub({k:'clear'});toast(team?'모둠 바구니를 비웠어요':'바구니를 비웠어요')});
-armButton($('clearMade'),'모두 지우기',()=>{state.made=[];renderMade();toast('만든 낱말을 모두 지웠어요')});
+armButton($('clearMade'),'모두 지우기',()=>{state.made.filter(w=>w.mine).forEach(w=>{goneMade.add(w.id);pub({k:'unmade',id:w.id})});state.made=state.made.filter(w=>!w.mine);renderMade();toast('내가 만든 낱말을 지웠어요')});
 
 $('tab1').onclick=()=>goStep(1);
 $('tab2').onclick=()=>goStep(2);
@@ -556,7 +564,8 @@ $('save').onclick=()=>{
   let letters=state.placed.map(k=>k===' '?{ch:' '}:{ch:m.get(k).ch,c:m.get(k).word.color});
   while(letters.length&&letters.at(-1).ch===' ')letters.pop();
   if(!letters.length){toast('먼저 아래 글자 자석을 눌러 보세요');return}
-  state.made.push({letters});state.placed=[];
+  const mid=DEV+'-m'+(++uid);state.made.push({id:mid,letters,mine:true,nm:me?me.name:''});state.placed=[];
+  pub({k:'made',id:mid,letters,who:whoAmI()});
   renderTiles();renderBoard();renderMade(true);
   toast(`"${letters.map(l=>l.ch).join('')}" 완성!`);
 };
@@ -581,7 +590,8 @@ const SERVER='https://ntfy.sh';
 const QP=new URLSearchParams(location.search);
 let CLASS=(QP.get('c')||'').replace(/[^a-z0-9]/gi,'').slice(0,16).toLowerCase();
 const TEAM_COLORS=['#2f6fe4','#e0407a','#16955c','#7b4bd8','#ea7d00','#0896ab','#c2410c','#4d7c0f'];
-let team=null, es=null, gone=new Set();
+let team=null, es=null, gone=new Set(), goneMade=new Set();
+const whoAmI=()=>me?`${me.no}번 ${me.name}`:'';
 let me=null;
 const h32=(str,seed)=>{let h=seed>>>0;for(const ch of str){h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0}return h.toString(36)};
 const normSchool=v=>v.replace(/\s+/g,'').replace(/초등학교$|학교$/,'').replace(/초$/,'')+'초';
@@ -625,6 +635,10 @@ function applyOp(op){
   if(op.k==='add'){ if(gone.has(op.id)||state.words.some(w=>w.id===op.id)||!syllables(op.t||'').length)return false;
     const w=mkWord(syllables(op.t).join('').slice(0,20),op.id);state.words.push(w);if(op.dev!==DEV)dropIds.add(w.id);return true}
   if(op.k==='del'){ gone.add(op.id);const n=state.words.length;state.words=state.words.filter(w=>w.id!==op.id);if(n!==state.words.length){cleanPlaced();return true}return false}
+  if(op.k==='made'){ if(goneMade.has(op.id)||state.made.some(w=>w.id===op.id)||!Array.isArray(op.letters))return false;
+    const letters=op.letters.slice(0,24).map(l=>({ch:String(l.ch||'').slice(0,1),c:Math.abs(+l.c||0)%COLORS})).filter(l=>l.ch);if(!letters.length)return false;
+    const mine=op.dev===DEV||(!!op.who&&op.who===whoAmI());state.made.push({id:op.id,letters,mine,nm:(op.who||'').replace(/^\d+번\s*/,'')});return true}
+  if(op.k==='unmade'){ goneMade.add(op.id);const n=state.made.length;state.made=state.made.filter(w=>w.id!==op.id);return n!==state.made.length}
   if(op.k==='clear'){ if(!state.words.length)return false;state.words.forEach(w=>gone.add(w.id));state.words=[];state.placed=[];return true}
   return false;
 }
@@ -635,7 +649,7 @@ async function joinTeam(n){
   const v=readMe();if(!v)return;me=v;
   if(es){es.close();es=null}
   team=n; try{sessionStorage.setItem('jp-team',String(n))}catch(e){}
-  state.words=[];state.placed=[];gone=new Set();
+  state.words=[];state.placed=[];state.made=[];gone=new Set();goneMade=new Set();
   [...$('teamBtns').children].forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.n===n)));
   $('s1sub').textContent=n?`${n}모둠 친구들이 담은 낱말도 바구니에 함께 모여요. 띄어 쓰면 여러 개를 한 번에 담을 수 있어요.`:'생각나는 낱말을 쓰고 담기를 눌러요. 띄어 쓰면 여러 개를 한 번에 담을 수 있어요.';
   setChip(false); $('helpFoot').hidden=false; $('help').hidden=true; goStep(1); renderAll(); $('wordInput').focus();
@@ -648,7 +662,7 @@ async function joinTeam(n){
   es=new EventSource(SERVER+'/'+topic()+'/sse?since='+Math.floor(Date.now()/1000));
   es.onopen=()=>setChip(true);
   es.onerror=()=>setChip(false);
-  es.onmessage=e=>{const op=parse(e.data);if(op&&op.dev!==DEV&&applyOp(op)){renderAll();if(op.k==='add')toast(op.nm?`${op.nm} 친구가 낱말을 담았어요`:'모둠 친구가 낱말을 담았어요')}};
+  es.onmessage=e=>{const op=parse(e.data);if(op&&op.dev!==DEV&&applyOp(op)){renderAll();if(op.k==='made'){const w=state.made.at(-1);toast(`${w.nm||'친구'}가 "${w.letters.map(l=>l.ch).join('')}"을(를) 만들었어요`)}else if(op.k==='add')toast(op.nm?`${op.nm} 친구가 낱말을 담았어요`:'모둠 친구가 낱말을 담았어요')}};
 }
 for(let i=1;i<=8;i++){const b=document.createElement('button');b.type='button';b.className='team-btn';b.dataset.n=i;b.style.setProperty('--tc',TEAM_COLORS[i-1]);b.textContent=`${i}모둠`;b.onclick=()=>joinTeam(i);$('teamBtns').append(b)}
 {const b=document.createElement('button');b.type='button';b.className='team-btn team-solo';b.dataset.n=0;b.textContent='혼자 할래요';b.onclick=()=>joinTeam(0);$('teamBtns').append(b)}
