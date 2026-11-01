@@ -662,7 +662,7 @@ async function joinTeam(n){
   es=new EventSource(SERVER+'/'+topic()+'/sse?since='+Math.floor(Date.now()/1000));
   es.onopen=()=>setChip(true);
   es.onerror=()=>setChip(false);
-  es.onmessage=e=>{const op=parse(e.data);if(op&&op.dev!==DEV&&applyOp(op)){renderAll();if(op.k==='made'){const w=state.made.at(-1);toast(`${w.nm||'친구'}가 "${w.letters.map(l=>l.ch).join('')}"을(를) 만들었어요`)}else if(op.k==='add')toast(op.nm?`${op.nm} 친구가 낱말을 담았어요`:'모둠 친구가 낱말을 담았어요')}};
+  es.onmessage=e=>{const op=parse(e.data);if(op&&op.dev!==DEV&&applyOp(op)){renderAll();if(op.k==='made'){const w=state.made.at(-1);toast(`${w.nm||'친구'}가 "${w.letters.map(l=>l.ch).join('')}"을(를) 만들었어요`)}else if(op.k==='add')toast('바구니에 새 낱말이 들어왔어요')}};
 }
 for(let i=1;i<=8;i++){const b=document.createElement('button');b.type='button';b.className='team-btn';b.dataset.n=i;b.style.setProperty('--tc',TEAM_COLORS[i-1]);b.textContent=`${i}모둠`;b.onclick=()=>joinTeam(i);$('teamBtns').append(b)}
 {const b=document.createElement('button');b.type='button';b.className='team-btn team-solo';b.dataset.n=0;b.textContent='혼자 할래요';b.onclick=()=>joinTeam(0);$('teamBtns').append(b)}
