@@ -421,7 +421,7 @@ h2{font-weight:700;letter-spacing:-.01em}
 <script>
 const COLORS=6;
 let uid=0;
-const DEV=Math.random().toString(36).slice(2,8);
+const DEV=(()=>{try{let d=sessionStorage.getItem('jp-dev');if(!d){d=Math.random().toString(36).slice(2,8);sessionStorage.setItem('jp-dev',d)}return d}catch(e){return Math.random().toString(36).slice(2,8)}})();
 const hcolor=id=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)%COLORS};
 const mkWord=(text,id)=>{id=id||DEV+'-'+(++uid);return {id,text,color:hcolor(id)}};
 const syllables=t=>[...t].filter(ch=>/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(ch));
@@ -441,7 +441,7 @@ function emptyBox(title,text,img){const p=document.createElement('p');p.classNam
 
 function goStep(n){
   if(n===2&&!state.words.length){toast('먼저 바구니에 낱말을 담아요');$('wordInput').focus();return}
-  state.step=n;
+  state.step=n;try{localStorage.setItem('jp-step',String(n))}catch(e){}
   $('stage1').hidden=n!==1;$('stage2').hidden=n!==2;
   $('tab1').removeAttribute('aria-current');$('tab2').removeAttribute('aria-current');
   $(n===1?'tab1':'tab2').setAttribute('aria-current','step');
@@ -452,6 +452,7 @@ function goStep(n){
 
 let dropIds=new Set();
 function renderWords(){
+  persist();
   const ul=$('wordList');ul.replaceChildren();
   const n=state.words.length;
   $('bowlCount').textContent=n?`낱말 ${n}개`:'';
@@ -493,6 +494,7 @@ function renderTiles(){
   $('tileInfo').textContent=state.limit?`누르면 원고지에 놓여요 · 남은 글자 ${left}개`:'누르면 원고지에 놓여요 · 같은 글자를 여러 번 쓸 수 있어요';
 }
 function renderBoard(popLast){
+  persist();
   const m=tileMap(),sheet=$('sheet');sheet.replaceChildren();
   state.placed.forEach((k,i)=>{
     const b=document.createElement('button');b.type='button';
@@ -513,6 +515,7 @@ function wordNode(cls,w){
   return s0;
 }
 function renderMade(fresh){
+  persist();
   const ul=$('madeList');ul.replaceChildren();
   $('count').firstChild.nodeValue=String(state.made.length);
   if(!state.made.length){ul.append(emptyBox('아직 만든 낱말이 없어요','글자를 원고지에 놓고 낱말 완성!을 누르면 여기에 모여요.','img/empty-made.webp'));return}
@@ -532,6 +535,8 @@ function renderMade(fresh){
     ul.append(li);
   });
 }
+function persist(){try{if(team===0)localStorage.setItem('jp-solo',JSON.stringify({w:state.words,m:state.made}));if(restored)localStorage.setItem('jp-placed',JSON.stringify(state.placed))}catch(e){}}
+let restored=false;
 function renderAll(){renderWords();renderTiles();renderBoard();renderMade()}
 function cleanPlaced(){const m=tileMap();state.placed=state.placed.filter(k=>k===' '||m.has(k))}
 
@@ -654,13 +659,14 @@ function setChip(ok){const c=$('teamChip');c.hidden=false;c.style.setProperty('-
   c.className='team-chip'+(ok||!team?'':' off');c.innerHTML='';const i=document.createElement('i');if(team)c.append(i);c.append(document.createTextNode(`${me.grade}-${me.cls} ${me.name} · `+(team?`${team}모둠`:'혼자')))}
 async function joinTeam(n){
   const v=readMe();if(!v)return;me=v;
+  let solo=null;try{solo=JSON.parse(localStorage.getItem('jp-solo')||'null')}catch(e){}
   if(es){es.close();es=null}
-  team=n; try{sessionStorage.setItem('jp-team',String(n))}catch(e){}
+  team=n; try{localStorage.setItem('jp-team',String(n))}catch(e){}
   state.words=[];state.placed=[];state.made=[];gone=new Set();goneMade=new Set();
   [...$('teamBtns').children].forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.n===n)));
   $('s1sub').textContent=n?`${n}모둠 친구들이 담은 낱말도 바구니에 함께 모여요. 띄어 쓰면 여러 개를 한 번에 담을 수 있어요.`:'생각나는 낱말을 쓰고 담기를 눌러요. 띄어 쓰면 여러 개를 한 번에 담을 수 있어요.';
   setChip(false); $('helpFoot').hidden=false; $('help').hidden=true; goStep(1); renderAll(); $('wordInput').focus();
-  if(!n)return;
+  if(!n){if(solo&&team===0){state.words=solo.w||[];state.made=solo.m||[];renderAll()}return}
   try{
     const r=await fetch(SERVER+'/'+topic()+'/json?poll=1&since=3h');const tx=await r.text();
     tx.split('\n').forEach(l=>{const op=parse(l);if(op)applyOp(op)});dropIds=new Set();renderAll();
@@ -683,4 +689,12 @@ document.addEventListener('keydown',e=>{
 
 renderAll();
 $('closeHelp').focus();
+// 새로고침해도 들어와 있던 모둠·단계로 바로 돌아가기
+(async()=>{try{
+  const t=localStorage.getItem('jp-team'),st=localStorage.getItem('jp-step'),pl=JSON.parse(localStorage.getItem('jp-placed')||'[]');
+  if(t===null||!localStorage.getItem('jp-me')){restored=true;return}
+  await joinTeam(+t);
+  if(st==='2'&&state.words.length){goStep(2);const m=tileMap();state.placed=pl.filter(k=>k===' '||m.has(k))}
+  restored=true;renderBoard();renderTiles();
+}catch(e){}finally{restored=true}})();
 </script>
