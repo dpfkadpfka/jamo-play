@@ -423,7 +423,8 @@ const COLORS=6;
 let uid=0;
 const DEV=(()=>{try{let d=sessionStorage.getItem('jp-dev');if(!d){d=Math.random().toString(36).slice(2,8);sessionStorage.setItem('jp-dev',d)}return d}catch(e){return Math.random().toString(36).slice(2,8)}})();
 const hcolor=id=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)%COLORS};
-const mkWord=(text,id)=>{id=id||DEV+'-'+(++uid);return {id,text,color:hcolor(id)}};
+const nid=()=>DEV+'-'+Date.now().toString(36)+(++uid);
+const mkWord=(text,id)=>{id=id||nid();return {id,text,color:hcolor(id)}};
 const syllables=t=>[...t].filter(ch=>/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(ch));
 const cv=c=>`var(--w${c})`;
 const $=id=>document.getElementById(id);
@@ -576,7 +577,7 @@ $('save').onclick=()=>{
   let letters=state.placed.map(k=>k===' '?{ch:' '}:{ch:m.get(k).ch,c:m.get(k).word.color});
   while(letters.length&&letters.at(-1).ch===' ')letters.pop();
   if(!letters.length){toast('먼저 아래 글자 자석을 눌러 보세요');return}
-  const mid=DEV+'-m'+(++uid);state.made.push({id:mid,letters,mine:true,nm:me?me.name:''});state.placed=[];
+  const mid=nid()+'m';state.made.push({id:mid,letters,mine:true,nm:me?me.name:''});state.placed=[];
   pub({k:'made',id:mid,letters,who:whoAmI()});
   renderTiles();renderBoard();renderMade(true);
   toast(`"${letters.map(l=>l.ch).join('')}" 완성!`);
@@ -597,12 +598,16 @@ $('closeShow').onclick=()=>{$('show').hidden=true;$('bigView').focus()};
 $('openHelp').onclick=()=>{$('help').hidden=false;$('closeHelp').focus()};
 $('closeHelp').onclick=()=>{if(team===null)return;$('help').hidden=true;if(state.step===1)$('wordInput').focus()};
 
-/* ---------- 모둠: 같은 반 링크(?c=) + 같은 모둠 번호면 바구니를 함께 쓴다 (ntfy.sh 공개 중계) ---------- */
-const SERVER='https://ntfy.sh';
+/* ---------- 모둠: 같은 학교·학년·반 + 같은 모둠 번호면 바구니를 함께 쓴다 (Firebase 실시간 DB) ---------- */
+const DB_URL='https://yeram-ai-video-default-rtdb.asia-southeast1.firebasedatabase.app';
+const FB='https://www.gstatic.com/firebasejs/10.12.2/';
+const KEEP=6*3600e3; /* 6시간 지난 낱말은 안 보여요 (다음 수업 때 새로 시작) */
+let fbP=null,unsub=[];
+function getDB(){ if(!fbP)fbP=Promise.all([import(FB+'firebase-app.js'),import(FB+'firebase-database.js')]).then(([a,d])=>({...d,db:d.getDatabase(a.initializeApp({databaseURL:DB_URL,projectId:'yeram-ai-video'},'jamo'))})).catch(e=>{fbP=null;throw e}); return fbP }
 const QP=new URLSearchParams(location.search);
 let CLASS=(QP.get('c')||'').replace(/[^a-z0-9]/gi,'').slice(0,16).toLowerCase();
 const TEAM_COLORS=['#2f6fe4','#e0407a','#16955c','#7b4bd8','#ea7d00','#0896ab','#c2410c','#4d7c0f'];
-let team=null, es=null, gone=new Set(), goneMade=new Set();
+let team=null, gone=new Set(), goneMade=new Set();
 const whoAmI=()=>me?`${me.no}번 ${me.name}`:'';
 let me=null;
 const h32=(str,seed)=>{let h=seed>>>0;for(const ch of str){h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0}return h.toString(36)};
@@ -639,10 +644,20 @@ function readMe(){
   $('meErr').textContent='';try{localStorage.setItem('jp-me',JSON.stringify(v))}catch(e){}return v;
 }
 try{const v=JSON.parse(localStorage.getItem('jp-me')||'null');if(v){schoolCode=v.code||'';schoolFree=!v.code&&!!v.school;if(v.code)$('meSchool').classList.add('ok');$('meSchool').value=v.school||'';$('meGrade').value=v.grade||'';$('meClass').value=v.cls||'';$('meNo').value=v.no||'';$('meName').value=v.name||''}}catch(e){}
-function pub(op){
-  if(!team)return; op.dev=DEV; op.nm=me?me.name:'';
-  fetch(SERVER+'/'+topic(),{method:'POST',body:JSON.stringify(op)}).catch(()=>toast('인터넷 연결을 확인해 주세요'));
+const base=()=>`jamo/${roomKey()}/t${team}`;
+async function pub(op){
+  if(!team)return; const t=team,b=base();
+  let f;try{f=await getDB()}catch(e){toast('인터넷 연결을 확인해 주세요');return}
+  if(team!==t)return; const {ref,set,remove,serverTimestamp,db}=f;
+  const p= op.k==='add'?set(ref(db,`${b}/w/${op.id}`),{t:op.t,at:serverTimestamp(),d:DEV})
+    : op.k==='del'?remove(ref(db,`${b}/w/${op.id}`))
+    : op.k==='clear'?remove(ref(db,`${b}/w`))
+    : op.k==='made'?set(ref(db,`${b}/m/${op.id}`),{l:op.letters,who:op.who||'',at:serverTimestamp(),d:DEV})
+    : op.k==='unmade'?remove(ref(db,`${b}/m/${op.id}`)):null;
+  p&&p.catch(()=>toast('저장이 안 됐어요. 인터넷 연결을 확인해 주세요'));
 }
+const wOp=c=>{const v=c.val()||{};return {k:'add',id:c.key,t:String(v.t||''),dev:v.d}};
+const mOp=c=>{const v=c.val()||{};return {k:'made',id:c.key,letters:v.l,who:v.who,dev:v.d}};
 function applyOp(op){
   if(op.k==='add'){ if(gone.has(op.id)||state.words.some(w=>w.id===op.id)||!syllables(op.t||'').length)return false;
     const w=mkWord(syllables(op.t).join('').slice(0,20),op.id);state.words.push(w);if(op.dev!==DEV)dropIds.add(w.id);return true}
@@ -654,28 +669,30 @@ function applyOp(op){
   if(op.k==='clear'){ if(!state.words.length)return false;state.words.forEach(w=>gone.add(w.id));state.words=[];state.placed=[];return true}
   return false;
 }
-function parse(line){try{const m=JSON.parse(line);if(m.event&&m.event!=='message')return null;return JSON.parse(m.message)}catch(e){return null}}
 function setChip(ok){const c=$('teamChip');c.hidden=false;c.style.setProperty('--tc',team?TEAM_COLORS[team-1]:'#7a8599');
   c.className='team-chip'+(ok||!team?'':' off');c.innerHTML='';const i=document.createElement('i');if(team)c.append(i);c.append(document.createTextNode(`${me.grade}-${me.cls} ${me.name} · `+(team?`${team}모둠`:'혼자')))}
 async function joinTeam(n){
   const v=readMe();if(!v)return;me=v;
   let solo=null;try{solo=JSON.parse(localStorage.getItem('jp-solo')||'null')}catch(e){}
-  if(es){es.close();es=null}
+  unsub.forEach(u=>{try{u()}catch(e){}});unsub=[];
   team=n; try{localStorage.setItem('jp-team',String(n))}catch(e){}
   state.words=[];state.placed=[];state.made=[];gone=new Set();goneMade=new Set();
   [...$('teamBtns').children].forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.n===n)));
   $('s1sub').textContent=n?`${n}모둠 친구들이 담은 낱말도 바구니에 함께 모여요. 띄어 쓰면 여러 개를 한 번에 담을 수 있어요.`:'생각나는 낱말을 쓰고 담기를 눌러요. 띄어 쓰면 여러 개를 한 번에 담을 수 있어요.';
   setChip(false); $('helpFoot').hidden=false; $('help').hidden=true; goStep(1); renderAll(); $('wordInput').focus();
   if(!n){if(solo&&team===0){state.words=solo.w||[];state.made=solo.m||[];renderAll()}return}
-  try{
-    const r=await fetch(SERVER+'/'+topic()+'/json?poll=1&since=3h');const tx=await r.text();
-    tx.split('\n').forEach(l=>{const op=parse(l);if(op)applyOp(op)});dropIds=new Set();renderAll();
-  }catch(e){toast('모둠 바구니를 불러오지 못했어요')}
+  let f;try{f=await getDB()}catch(e){toast('모둠 바구니를 불러오지 못했어요. 새로고침해 주세요');return}
   if(team!==n)return;
-  es=new EventSource(SERVER+'/'+topic()+'/sse?since='+Math.floor(Date.now()/1000));
-  es.onopen=()=>setChip(true);
-  es.onerror=()=>setChip(false);
-  es.onmessage=e=>{const op=parse(e.data);if(op&&op.dev!==DEV&&applyOp(op)){renderAll();if(op.k==='made'){const w=state.made.at(-1);toast(`${w.nm||'친구'}가 "${w.letters.map(l=>l.ch).join('')}"을(를) 만들었어요`)}else if(op.k==='add')toast('바구니에 새 낱말이 들어왔어요')}};
+  const {ref,query,orderByChild,startAt,get,onChildAdded,onChildRemoved,onValue,db}=f, b=base(), since=Date.now()-KEEP;
+  const qw=query(ref(db,b+'/w'),orderByChild('at'),startAt(since)), qm=query(ref(db,b+'/m'),orderByChild('at'),startAt(since));
+  try{const [sw,sm]=await Promise.all([get(qw),get(qm)]);if(team!==n)return;
+    sw.forEach(c=>{applyOp(wOp(c))});sm.forEach(c=>{applyOp(mOp(c))});dropIds=new Set();renderAll();
+  }catch(e){if(team!==n)return;toast('모둠 바구니를 불러오지 못했어요')}
+  const live=op=>{if(team!==n||!applyOp(op))return;renderAll();if(op.dev===DEV)return;
+    if(op.k==='made'){const w=state.made.at(-1);toast(`${w.nm||'친구'}가 "${w.letters.map(l=>l.ch).join('')}"을(를) 만들었어요`)}else if(op.k==='add')toast('바구니에 새 낱말이 들어왔어요')};
+  unsub.push(onChildAdded(qw,c=>live(wOp(c))),onChildRemoved(qw,c=>live({k:'del',id:c.key})),
+    onChildAdded(qm,c=>live(mOp(c))),onChildRemoved(qm,c=>live({k:'unmade',id:c.key})),
+    onValue(ref(db,'.info/connected'),s=>{if(team===n)setChip(!!s.val())}));
 }
 for(let i=1;i<=8;i++){const b=document.createElement('button');b.type='button';b.className='team-btn';b.dataset.n=i;b.style.setProperty('--tc',TEAM_COLORS[i-1]);b.textContent=`${i}모둠`;b.onclick=()=>joinTeam(i);$('teamBtns').append(b)}
 {const b=document.createElement('button');b.type='button';b.className='team-btn team-solo';b.dataset.n=0;b.textContent='혼자 할래요';b.onclick=()=>joinTeam(0);$('teamBtns').append(b)}
