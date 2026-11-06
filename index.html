@@ -256,7 +256,7 @@ h2{font-weight:700;letter-spacing:-.01em}
 .team-btns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .team-btn{border:2px solid transparent;border-radius:18px;padding:12px 6px;font-size:1.25rem;font-weight:700;color:#fff;background:var(--tc);box-shadow:0 4px 0 color-mix(in srgb,var(--tc) 65%,#000);transition:transform .1s}
 .team-btn:hover{transform:translateY(-2px)}
-.team-btn[aria-pressed="true"]{outline:4px solid var(--accent);outline-offset:2px}
+.team-btn[aria-pressed="true"]{outline:4px solid var(--ink);outline-offset:2px}
 .team-solo{grid-column:1/-1;background:var(--surface);color:var(--ink-2);box-shadow:none;border-color:var(--line);font-size:1rem}
 .team-note{margin:0;text-align:center;color:var(--muted);font-size:.9rem}
 .team-teacher{align-self:center;border:0;background:none;color:var(--muted);font-size:.85rem;text-decoration:underline;text-underline-offset:3px}
@@ -299,13 +299,17 @@ h2{font-weight:700;letter-spacing:-.01em}
 .intro .dialog-foot{justify-content:center}
 .intro-how{display:none}
 .intro-title{margin:0 0 2px;text-align:center;font-size:clamp(1.4rem,2.6vw,1.8rem);color:var(--brand)}
-.dialog.intro.full{width:min(1100px,100%);grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)!important}
+.dialog.intro.full{width:min(560px,100%)}
+.dialog.intro.full .team{display:none}
+.how-ok{align-self:center;margin-top:4px}
+.intro-how .how-ok{display:none}.dialog.intro.full .how-ok{display:inline-flex}
 .dialog.intro.full .intro-how{display:flex}
 .dialog.intro.full .intro-title{display:none}
-@media (max-width:760px){.dialog.intro.full{grid-template-columns:minmax(0,1fr)!important}.intro .how-hero{display:none}}
+
 @media (max-height:640px){.intro .how-hero{display:none}}
 
-.team-tch{grid-column:1/-1;background:var(--ink);color:#fff;box-shadow:none;font-size:.95rem;padding:9px 6px!important}
+.tch-link{align-self:center;border:0;background:none;color:var(--muted);font-family:var(--font);font-size:.74rem;font-weight:500;padding:2px 6px;margin-top:2px;text-decoration:underline;text-underline-offset:3px;opacity:.8;cursor:pointer}
+.tch-link:hover{opacity:1;color:var(--ink-2)}
 .teacher{position:fixed;inset:0;z-index:45;background:var(--bg);display:flex;flex-direction:column;padding:14px clamp(12px,2vw,24px);gap:12px}
 .teacher[hidden]{display:none}
 .t-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -327,6 +331,8 @@ h2{font-weight:700;letter-spacing:-.01em}
 .t-empty{background:none!important;color:var(--muted);font-size:.85rem!important}
 .t-cap{margin:4px 0 0;font-size:.78rem;font-weight:800;color:var(--muted)}
 @media (max-width:760px){.t-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none}}
+
+@media (min-width:1000px){.appbar-in{position:relative}.appbar-in>.tabs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}}
 </style>
 
 <header class="appbar">
@@ -431,6 +437,7 @@ h2{font-weight:700;letter-spacing:-.01em}
         <li><span class="n">2</span><div><h3>글자 자석 누르기</h3><p>글자 자석을 눌러 원고지에 놓아요.</p></div></li>
         <li><span class="n">3</span><div><h3>낱말 완성!</h3><p>새 낱말이 되면 낱말 완성!을 눌러요.</p></div></li>
       </ol>
+      <button class="btn primary lg how-ok" id="howOk" type="button">알겠어요</button>
     </section>
     <section class="team" id="team">
       <h2 class="intro-title">글자 조합 놀이터</h2>
@@ -447,6 +454,7 @@ h2{font-weight:700;letter-spacing:-.01em}
       <div class="team-btns" id="teamBtns"></div>
       <p class="team-note">같은 반·같은 모둠 친구들의 낱말이 바구니에 함께 모여요.</p>
       <div class="dialog-foot" id="helpFoot" hidden><button class="btn primary lg" id="closeHelp" type="button">계속하기</button></div>
+      <button class="tch-link" id="tchLink" type="button">선생님 모드</button>
     </section>
   </div>
 </div>
@@ -645,7 +653,8 @@ $('bigView').onclick=()=>{
   $('show').hidden=false;$('closeShow').focus();
 };
 $('closeShow').onclick=()=>{$('show').hidden=true;$('bigView').focus()};
-$('openHelp').onclick=()=>{$('introBox').classList.add('full');$('help').hidden=false;$('closeHelp').focus()};
+$('openHelp').onclick=()=>{$('introBox').classList.add('full');$('help').hidden=false;$('howOk').focus()};
+$('howOk').onclick=()=>{$('introBox').classList.remove('full');if(team===null)return;$('help').hidden=true;if(state.step===1)$('wordInput').focus()};
 $('closeHelp').onclick=()=>{if(team===null)return;$('help').hidden=true;if(state.step===1)$('wordInput').focus()};
 
 /* ---------- 모둠: 같은 학교·학년·반 + 같은 모둠 번호면 바구니를 함께 쓴다 (Firebase 실시간 DB) ---------- */
@@ -746,7 +755,7 @@ async function joinTeam(n){
 }
 for(let i=1;i<=8;i++){const b=document.createElement('button');b.type='button';b.className='team-btn';b.dataset.n=i;b.style.setProperty('--tc',TEAM_COLORS[i-1]);b.textContent=`${i}모둠`;b.onclick=()=>joinTeam(i);$('teamBtns').append(b)}
 {const b=document.createElement('button');b.type='button';b.className='team-btn team-solo';b.dataset.n=0;b.textContent='로그인 없이 체험하기';b.onclick=()=>joinTeam(0);$('teamBtns').append(b)}
-{const b=document.createElement('button');b.type='button';b.className='team-btn team-tch';b.textContent='선생님 · 모든 모둠 보기';b.onclick=()=>openTeacher();$('teamBtns').append(b)}
+$('tchLink').onclick=()=>openTeacher();
 let tUnsub=null;
 async function openTeacher(){
   const v=readMe(true);if(!v)return;me={...v,no:v.no||'0',name:v.name||'선생님'};
@@ -790,7 +799,7 @@ $('tBack').onclick=()=>{if(tUnsub){tUnsub();tUnsub=null}$('teacher').hidden=true
 $('teamChip').onclick=()=>{$('introBox').classList.remove('full');$('help').hidden=false;$('closeHelp').focus()};
 $('help').addEventListener('click',e=>{if(e.target===$('help'))$('closeHelp').click()});
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){if(!$('help').hidden){$('closeHelp').click();return}if(!$('show').hidden){$('closeShow').click();return}}
+  if(e.key==='Escape'){if(!$('help').hidden){$('introBox').classList.contains('full')?$('howOk').click():$('closeHelp').click();return}if(!$('show').hidden){$('closeShow').click();return}}
   if(state.step!==2||e.target.tagName==='INPUT'||!$('help').hidden)return;
   if(e.key==='Backspace'){e.preventDefault();$('back').click()}
 });
