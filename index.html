@@ -274,6 +274,59 @@ h2{font-weight:700;letter-spacing:-.01em}
   .tabs{order:3;width:100%}.tab{flex:1;justify-content:center;padding:8px}
   .stage1-foot .btn{width:100%}.board-foot .btn.lg{width:100%}
 }
+
+/* ---- 첫 화면: 태블릿 가로 한 화면 (왼쪽 사용 방법 · 오른쪽 입력) ---- */
+.dialog.intro{width:min(640px,100%);grid-template-columns:minmax(0,1fr)!important;max-height:calc(100dvh - 24px);display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:0;padding:0;overflow:auto}
+.intro-how{background:linear-gradient(180deg,var(--brand-soft),var(--surface));padding:clamp(18px,2.6vh,28px) clamp(18px,2.2vw,28px);display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px)}
+.intro-how h2{margin:0;font-size:clamp(1.35rem,2.4vw,1.9rem);line-height:1.25}
+.intro .how-hero{margin:0;width:100%;max-height:22vh;object-fit:contain}
+.intro .how{grid-template-columns:minmax(0,1fr);gap:clamp(6px,1vh,10px)}
+.intro .how li{flex-direction:row;align-items:center;gap:12px;padding:clamp(8px,1.3vh,12px) 14px;background:var(--surface);border-radius:16px;box-shadow:0 2px 0 var(--line)}
+.intro .how .n{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--brand);color:#fff;font-size:1rem;letter-spacing:0;font-family:var(--title)}
+.intro .how h3{font-size:1.02rem}
+.intro .how p{font-size:.88rem;line-height:1.35}
+.intro .team{border-radius:0;background:var(--surface);padding:clamp(16px,2.4vh,26px) clamp(18px,2.2vw,28px);gap:clamp(6px,1.1vh,10px);justify-content:center}
+.intro .team-q{display:flex;align-items:center;gap:8px;text-align:left;font-size:1.12rem}
+.intro .team-q b{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff;font-size:.9rem}
+.intro .me{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.intro .me .sch{grid-column:1/-1}
+.intro .me input,.intro .me select{font-family:var(--font);padding:clamp(7px,1.1vh,10px) 10px;font-size:1.02rem}
+.intro .me-err{min-height:1.1em;font-size:.85rem}
+.intro .team-btns{gap:8px}
+.intro .team-btn{padding:clamp(7px,1.2vh,11px) 4px;font-size:1.15rem}
+.intro .team-solo{font-size:.95rem}
+.intro .team-note{font-size:.82rem}
+.intro .dialog-foot{justify-content:center}
+.intro-how{display:none}
+.intro-title{margin:0 0 2px;text-align:center;font-size:clamp(1.4rem,2.6vw,1.8rem);color:var(--brand)}
+.dialog.intro.full{width:min(1100px,100%);grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)!important}
+.dialog.intro.full .intro-how{display:flex}
+.dialog.intro.full .intro-title{display:none}
+@media (max-width:760px){.dialog.intro.full{grid-template-columns:minmax(0,1fr)!important}.intro .how-hero{display:none}}
+@media (max-height:640px){.intro .how-hero{display:none}}
+
+.team-tch{grid-column:1/-1;background:var(--ink);color:#fff;box-shadow:none;font-size:.95rem;padding:9px 6px!important}
+.teacher{position:fixed;inset:0;z-index:45;background:var(--bg);display:flex;flex-direction:column;padding:14px clamp(12px,2vw,24px);gap:12px}
+.teacher[hidden]{display:none}
+.t-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.t-head>div{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.t-head h2{margin:0;font-size:clamp(1.2rem,2.2vw,1.6rem)}
+.t-sum{font-weight:700;color:var(--muted)}
+.t-live{width:12px;height:12px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.2)}
+.t-live.off{background:#f97316;box-shadow:none}
+.t-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px}
+.t-card{background:var(--surface);border-radius:18px;border-top:6px solid var(--tc);padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0;overflow:auto;box-shadow:0 2px 0 var(--line)}
+.t-card h3{margin:0;display:flex;align-items:baseline;justify-content:space-between;gap:6px;font-family:var(--title);color:var(--tc);font-size:1.15rem}
+.t-card h3 small{font-family:var(--font);color:var(--muted);font-size:.78rem;font-weight:700}
+.t-words,.t-made{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:5px}
+.t-words li,.t-made li{display:flex;align-items:center;gap:4px;background:var(--sunken);border-radius:10px;padding:3px 4px 3px 9px;font-size:.95rem}
+.t-made li{background:color-mix(in srgb,var(--tc) 12%,var(--surface))}
+.t-words small,.t-made small{color:var(--muted);font-size:.72rem;font-weight:600}
+.t-words button,.t-made button{border:0;background:none;color:var(--muted);font-size:1rem;line-height:1;padding:2px 5px;border-radius:6px;cursor:pointer}
+.t-words button:hover,.t-made button:hover{background:var(--line);color:var(--w1)}
+.t-empty{background:none!important;color:var(--muted);font-size:.85rem!important}
+.t-cap{margin:4px 0 0;font-size:.78rem;font-weight:800;color:var(--muted)}
+@media (max-width:760px){.t-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none}}
 </style>
 
 <header class="appbar">
@@ -368,45 +421,39 @@ h2{font-weight:700;letter-spacing:-.01em}
 </main>
 
 <div class="modal" id="help" role="dialog" aria-modal="true" aria-labelledby="h-help">
-  <div class="dialog">
-    <div>
+  <div class="dialog intro" id="introBox">
+    <section class="intro-how">
       <div class="eyebrow">사용 방법</div>
-      <h2 id="h-help">낱말을 모아서, 그 글자로 새 낱말을 만들어요</h2>
-    </div>
-    <img class="how-hero" src="img/help-steps.webp" alt="" aria-hidden="true">
-    <ol class="how">
-      <li>
-        <span class="n">STEP 1</span>
-        <h3>낱말 담기</h3>
-        <p>떠오르는 낱말을 쓰고 담기를 눌러 바구니에 모아요.</p>
-      </li>
-      <li>
-        <span class="n">STEP 2</span>
-        <h3>글자 자석 누르기</h3>
-        <p>낱말이 한 글자씩 자석이 돼요. 눌러서 원고지에 놓아요.</p>
-      </li>
-      <li>
-        <span class="n">STEP 3</span>
-        <h3>낱말 완성!</h3>
-        <p>새 낱말이 되면 낱말 완성!을 눌러요. 오른쪽에 모여요.</p>
-      </li>
-    </ol>
-    <div class="team" id="team">
-      <p class="team-q">① 나를 소개해요</p>
+      <h2 id="h-help">낱말을 모아<br>새 낱말을 만들어요</h2>
+      <img class="how-hero" src="img/help-steps.webp" alt="" aria-hidden="true">
+      <ol class="how">
+        <li><span class="n">1</span><div><h3>낱말 담기</h3><p>떠오르는 낱말을 써서 바구니에 담아요.</p></div></li>
+        <li><span class="n">2</span><div><h3>글자 자석 누르기</h3><p>글자 자석을 눌러 원고지에 놓아요.</p></div></li>
+        <li><span class="n">3</span><div><h3>낱말 완성!</h3><p>새 낱말이 되면 낱말 완성!을 눌러요.</p></div></li>
+      </ol>
+    </section>
+    <section class="team" id="team">
+      <h2 class="intro-title">글자 조합 놀이터</h2>
+      <p class="team-q"><b>1</b>나를 소개해요</p>
       <div class="me">
         <label class="sch">학교<input id="meSchool" placeholder="학교 이름 검색 (예: 부천북)" maxlength="20" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="schoolList"><ul class="sch-list" id="schoolList" role="listbox" hidden></ul></label>
         <label>학년<select id="meGrade"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
         <label>반<input id="meClass" inputmode="numeric" maxlength="2" placeholder="1"></label>
         <label>번호<input id="meNo" inputmode="numeric" maxlength="2" placeholder="1"></label>
-        <label>이름<input id="meName" maxlength="8" placeholder="이름" autocomplete="off"></label>
+        <label class="nm">이름<input id="meName" maxlength="8" placeholder="이름" autocomplete="off"></label>
       </div>
       <p class="me-err" id="meErr"></p>
-      <p class="team-q">② 우리 모둠을 골라요</p>
+      <p class="team-q"><b>2</b>우리 모둠을 눌러요</p>
       <div class="team-btns" id="teamBtns"></div>
-      <p class="team-note">같은 학교·학년·반·모둠 친구들이 담은 낱말이 바구니에 함께 모여요.</p>
-    </div>
-    <div class="dialog-foot" id="helpFoot" hidden><button class="btn primary lg" id="closeHelp" type="button">계속하기</button></div>
+      <p class="team-note">같은 반·같은 모둠 친구들의 낱말이 바구니에 함께 모여요.</p>
+      <div class="dialog-foot" id="helpFoot" hidden><button class="btn primary lg" id="closeHelp" type="button">계속하기</button></div>
+    </section>
   </div>
+</div>
+
+<div class="teacher" id="teacher" hidden>
+  <header class="t-head"><div><span class="t-live" id="tLive"></span><h2 id="tTitle">모든 모둠</h2><span class="t-sum" id="tSum"></span></div><button class="btn" id="tBack" type="button">처음 화면으로</button></header>
+  <div class="t-grid" id="tGrid"></div>
 </div>
 
 <div class="show" id="show" hidden role="dialog" aria-modal="true" aria-labelledby="h-show">
@@ -424,7 +471,7 @@ let uid=0;
 const DEV=(()=>{try{let d=sessionStorage.getItem('jp-dev');if(!d){d=Math.random().toString(36).slice(2,8);sessionStorage.setItem('jp-dev',d)}return d}catch(e){return Math.random().toString(36).slice(2,8)}})();
 const hcolor=id=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)%COLORS};
 const nid=()=>DEV+'-'+Date.now().toString(36)+(++uid);
-const mkWord=(text,id)=>{id=id||nid();return {id,text,color:hcolor(id)}};
+const mkWord=(text,id,mine=true)=>{id=id||nid();return {id,text,color:hcolor(id),mine}};
 const syllables=t=>[...t].filter(ch=>/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(ch));
 const cv=c=>`var(--w${c})`;
 const $=id=>document.getElementById(id);
@@ -466,7 +513,7 @@ function renderWords(){
     li.append(document.createTextNode(w.text));
     const x=document.createElement('button');x.className='x';x.type='button';x.textContent='×';x.setAttribute('aria-label',w.text+' 바구니에서 빼기');
     x.onclick=()=>{gone.add(w.id);state.words=state.words.filter(o=>o.id!==w.id);cleanPlaced();renderAll();pub({k:'del',id:w.id})};
-    li.append(x);ul.append(li);
+    if(team===0||w.mine!==false)li.append(x);ul.append(li);
   });
   dropIds=new Set();
 }
@@ -549,7 +596,7 @@ $('addForm').addEventListener('submit',e=>{
   const raw=$('wordInput').value.trim();if(!raw){$('wordInput').focus();return}
   const list=raw.split(/[\s,]+/).filter(Boolean);
   const ok=list.filter(w=>syllables(w).length),bad=list.filter(w=>!syllables(w).length);
-  ok.forEach(w=>{const nw=mkWord(syllables(w).join(''));dropIds.add(nw.id);state.words.push(nw);pub({k:'add',id:nw.id,t:nw.text})});
+  ok.forEach(w=>{const nw=mkWord(syllables(w).join(''));dropIds.add(nw.id);state.words.push(nw);pub({k:'add',id:nw.id,t:nw.text,who:whoAmI()})});
   $('wordInput').value='';$('wordInput').focus();
   if(bad.length)toast(`한글 낱말만 담을 수 있어요: ${bad.join(', ')}`);
   renderAll();
@@ -562,7 +609,10 @@ function armButton(btn,label,action){
     timer=setTimeout(()=>{timer=null;btn.textContent=label;btn.classList.remove('armed')},3000);
   };
 }
-armButton($('clearWords'),'바구니 비우기',()=>{state.words.forEach(w=>gone.add(w.id));state.words=[];state.placed=[];renderAll();pub({k:'clear'});toast(team?'모둠 바구니를 비웠어요':'바구니를 비웠어요')});
+armButton($('clearWords'),'바구니 비우기',()=>{
+  if(!team){state.words.forEach(w=>gone.add(w.id));state.words=[];state.placed=[];renderAll();toast('바구니를 비웠어요');return}
+  const mine=state.words.filter(w=>w.mine!==false);if(!mine.length){toast('내가 담은 낱말이 없어요');return}
+  mine.forEach(w=>{gone.add(w.id);pub({k:'del',id:w.id})});state.words=state.words.filter(w=>w.mine===false);cleanPlaced();renderAll();toast('내가 담은 낱말을 뺐어요')});
 armButton($('clearMade'),'모두 지우기',()=>{state.made.filter(w=>w.mine).forEach(w=>{goneMade.add(w.id);pub({k:'unmade',id:w.id})});state.made=state.made.filter(w=>!w.mine);renderMade();toast('내가 만든 낱말을 지웠어요')});
 
 $('tab1').onclick=()=>goStep(1);
@@ -595,7 +645,7 @@ $('bigView').onclick=()=>{
   $('show').hidden=false;$('closeShow').focus();
 };
 $('closeShow').onclick=()=>{$('show').hidden=true;$('bigView').focus()};
-$('openHelp').onclick=()=>{$('help').hidden=false;$('closeHelp').focus()};
+$('openHelp').onclick=()=>{$('introBox').classList.add('full');$('help').hidden=false;$('closeHelp').focus()};
 $('closeHelp').onclick=()=>{if(team===null)return;$('help').hidden=true;if(state.step===1)$('wordInput').focus()};
 
 /* ---------- 모둠: 같은 학교·학년·반 + 같은 모둠 번호면 바구니를 함께 쓴다 (Firebase 실시간 DB) ---------- */
@@ -635,11 +685,11 @@ async function searchSchool(q){
 $('meSchool').addEventListener('input',()=>{schoolCode='';schoolFree=false;$('meSchool').classList.remove('ok');clearTimeout(schTimer);schTimer=setTimeout(()=>searchSchool($('meSchool').value),300)});
 $('meSchool').addEventListener('focus',()=>{if(!schoolCode&&$('meSchool').value.trim())searchSchool($('meSchool').value)});
 document.addEventListener('click',e=>{if(!e.target.closest('.sch'))schShow([])});
-function readMe(){
+function readMe(tch){
   const v={code:schoolCode,school:$('meSchool').value.trim(),grade:$('meGrade').value,cls:$('meClass').value.replace(/\D/g,''),no:$('meNo').value.replace(/\D/g,''),name:$('meName').value.trim()};
-  const miss=[['meSchool',v.school],['meGrade',v.grade],['meClass',v.cls],['meNo',v.no],['meName',v.name]].filter(([id,x])=>!x);
+  const miss=[['meSchool',v.school],['meGrade',v.grade],['meClass',v.cls],['meNo',v.no],['meName',v.name]].filter(([id,x])=>!x&&!(tch&&(id==='meNo'||id==='meName')));
   ['meSchool','meGrade','meClass','meNo','meName'].forEach(id=>$(id).classList.toggle('bad',miss.some(m=>m[0]===id)));
-  if(miss.length){$('meErr').textContent='빈칸을 모두 채워 주세요.';$(miss[0][0]).focus();return null}
+  if(miss.length){$('meErr').textContent=tch?'학교·학년·반을 채워 주세요.':'빈칸을 모두 채워 주세요.';$(miss[0][0]).focus();return null}
   if(!schoolCode&&!schoolFree){$('meSchool').classList.add('bad');$('meErr').textContent='학교를 검색해서 목록에서 눌러 주세요.';$('meSchool').focus();searchSchool(v.school);return null}
   $('meErr').textContent='';try{localStorage.setItem('jp-me',JSON.stringify(v))}catch(e){}return v;
 }
@@ -649,18 +699,18 @@ async function pub(op){
   if(!team)return; const t=team,b=base();
   let f;try{f=await getDB()}catch(e){toast('인터넷 연결을 확인해 주세요');return}
   if(team!==t)return; const {ref,set,remove,serverTimestamp,db}=f;
-  const p= op.k==='add'?set(ref(db,`${b}/w/${op.id}`),{t:op.t,at:serverTimestamp(),d:DEV})
+  const p= op.k==='add'?set(ref(db,`${b}/w/${op.id}`),{t:op.t,n:op.who||'',at:serverTimestamp(),d:DEV})
     : op.k==='del'?remove(ref(db,`${b}/w/${op.id}`))
     : op.k==='clear'?remove(ref(db,`${b}/w`))
     : op.k==='made'?set(ref(db,`${b}/m/${op.id}`),{l:op.letters,who:op.who||'',at:serverTimestamp(),d:DEV})
     : op.k==='unmade'?remove(ref(db,`${b}/m/${op.id}`)):null;
   p&&p.catch(()=>toast('저장이 안 됐어요. 인터넷 연결을 확인해 주세요'));
 }
-const wOp=c=>{const v=c.val()||{};return {k:'add',id:c.key,t:String(v.t||''),dev:v.d}};
+const wOp=c=>{const v=c.val()||{};return {k:'add',id:c.key,t:String(v.t||''),dev:v.d,who:v.n}};
 const mOp=c=>{const v=c.val()||{};return {k:'made',id:c.key,letters:v.l,who:v.who,dev:v.d}};
 function applyOp(op){
   if(op.k==='add'){ if(gone.has(op.id)||state.words.some(w=>w.id===op.id)||!syllables(op.t||'').length)return false;
-    const w=mkWord(syllables(op.t).join('').slice(0,20),op.id);state.words.push(w);if(op.dev!==DEV)dropIds.add(w.id);return true}
+    const w=mkWord(syllables(op.t).join('').slice(0,20),op.id,op.dev===DEV||(!!op.who&&op.who===whoAmI()));state.words.push(w);if(op.dev!==DEV)dropIds.add(w.id);return true}
   if(op.k==='del'){ gone.add(op.id);const n=state.words.length;state.words=state.words.filter(w=>w.id!==op.id);if(n!==state.words.length){cleanPlaced();return true}return false}
   if(op.k==='made'){ if(goneMade.has(op.id)||state.made.some(w=>w.id===op.id)||!Array.isArray(op.letters))return false;
     const letters=op.letters.slice(0,24).map(l=>({ch:String(l.ch||'').slice(0,1),c:Math.abs(+l.c||0)%COLORS})).filter(l=>l.ch);if(!letters.length)return false;
@@ -670,9 +720,9 @@ function applyOp(op){
   return false;
 }
 function setChip(ok){const c=$('teamChip');c.hidden=false;c.style.setProperty('--tc',team?TEAM_COLORS[team-1]:'#7a8599');
-  c.className='team-chip'+(ok||!team?'':' off');c.innerHTML='';const i=document.createElement('i');if(team)c.append(i);c.append(document.createTextNode(`${me.grade}-${me.cls} ${me.name} · `+(team?`${team}모둠`:'혼자')))}
+  c.className='team-chip'+(ok||!team?'':' off');c.innerHTML='';const i=document.createElement('i');if(team)c.append(i);c.append(document.createTextNode(me.guest?'체험하기':`${me.grade}-${me.cls} ${me.name} · `+(team?`${team}모둠`:'혼자')))}
 async function joinTeam(n){
-  const v=readMe();if(!v)return;me=v;
+  if(n){const v=readMe();if(!v)return;me=v}else{$('meErr').textContent='';['meSchool','meGrade','meClass','meNo','meName'].forEach(id=>$(id).classList.remove('bad'));me={code:'',school:'',grade:'',cls:'',no:'',name:'',guest:true}}
   let solo=null;try{solo=JSON.parse(localStorage.getItem('jp-solo')||'null')}catch(e){}
   unsub.forEach(u=>{try{u()}catch(e){}});unsub=[];
   team=n; try{localStorage.setItem('jp-team',String(n))}catch(e){}
@@ -695,8 +745,49 @@ async function joinTeam(n){
     onValue(ref(db,'.info/connected'),s=>{if(team===n)setChip(!!s.val())}));
 }
 for(let i=1;i<=8;i++){const b=document.createElement('button');b.type='button';b.className='team-btn';b.dataset.n=i;b.style.setProperty('--tc',TEAM_COLORS[i-1]);b.textContent=`${i}모둠`;b.onclick=()=>joinTeam(i);$('teamBtns').append(b)}
-{const b=document.createElement('button');b.type='button';b.className='team-btn team-solo';b.dataset.n=0;b.textContent='혼자 할래요';b.onclick=()=>joinTeam(0);$('teamBtns').append(b)}
-$('teamChip').onclick=()=>$('openHelp').click();
+{const b=document.createElement('button');b.type='button';b.className='team-btn team-solo';b.dataset.n=0;b.textContent='로그인 없이 체험하기';b.onclick=()=>joinTeam(0);$('teamBtns').append(b)}
+{const b=document.createElement('button');b.type='button';b.className='team-btn team-tch';b.textContent='선생님 · 모든 모둠 보기';b.onclick=()=>openTeacher();$('teamBtns').append(b)}
+let tUnsub=null;
+async function openTeacher(){
+  const v=readMe(true);if(!v)return;me={...v,no:v.no||'0',name:v.name||'선생님'};
+  unsub.forEach(u=>{try{u()}catch(e){}});unsub=[];if(tUnsub){tUnsub();tUnsub=null}
+  team=null;try{localStorage.setItem('jp-team','T')}catch(e){}
+  $('help').hidden=true;$('teacher').hidden=false;
+  $('tTitle').textContent=`${me.school.replace(/등학교$/,'')} ${me.grade}학년 ${me.cls}반 · 모든 모둠`;
+  const grid=$('tGrid');grid.replaceChildren();
+  let f;try{f=await getDB()}catch(e){toast('불러오지 못했어요. 새로고침해 주세요');return}
+  const room=`jamo/${roomKey()}`;
+  tUnsub=f.onValue(f.ref(f.db,room),snap=>drawTeacher(snap.val()||{},f,room));
+  const u2=f.onValue(f.ref(f.db,'.info/connected'),s=>$('tLive').classList.toggle('off',!s.val()));unsub.push(u2);
+}
+function drawTeacher(all,f,room){
+  const since=Date.now()-KEEP,grid=$('tGrid');grid.replaceChildren();let tw=0;
+  for(let i=1;i<=8;i++){
+    const d=all['t'+i]||{};
+    const ws=Object.entries(d.w||{}).filter(([,v])=>(v.at||0)>=since).sort((a,b)=>a[1].at-b[1].at);
+    const ms=Object.entries(d.m||{}).filter(([,v])=>(v.at||0)>=since).sort((a,b)=>a[1].at-b[1].at);
+    tw+=ws.length;
+    const card=document.createElement('section');card.className='t-card';card.style.setProperty('--tc',TEAM_COLORS[i-1]);
+    const h=document.createElement('h3');h.innerHTML=`<span>${i}모둠</span><small>낱말 ${ws.length} · 완성 ${ms.length}</small>`;card.append(h);
+    const wl=document.createElement('ul');wl.className='t-words';
+    if(!ws.length){const e=document.createElement('li');e.className='t-empty';e.textContent='아직 낱말이 없어요';wl.append(e)}
+    ws.forEach(([id,v])=>{const li=document.createElement('li');li.title=v.n||'';
+      const t=document.createElement('b');t.textContent=v.t;li.append(t);
+      if(v.n){const n=document.createElement('small');n.textContent=v.n;li.append(n)}
+      const x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label',v.t+' 지우기');
+      x.onclick=()=>f.remove(f.ref(f.db,`${room}/t${i}/w/${id}`));li.append(x);wl.append(li)});
+    card.append(wl);
+    if(ms.length){const ml=document.createElement('ul');ml.className='t-made';
+      ms.forEach(([id,v])=>{const li=document.createElement('li');const t=document.createElement('b');t.textContent=(v.l||[]).map(l=>l.ch).join('');li.append(t);
+        if(v.who){const n=document.createElement('small');n.textContent=v.who;li.append(n)}
+        const x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label','지우기');
+        x.onclick=()=>f.remove(f.ref(f.db,`${room}/t${i}/m/${id}`));li.append(x);ml.append(li)});
+      const cap=document.createElement('p');cap.className='t-cap';cap.textContent='만든 낱말';card.append(cap,ml)}
+    grid.append(card)}
+  $('tSum').textContent=`모은 낱말 ${tw}개`;
+}
+$('tBack').onclick=()=>{if(tUnsub){tUnsub();tUnsub=null}$('teacher').hidden=true;try{localStorage.removeItem('jp-team')}catch(e){}$('introBox').classList.remove('full');$('helpFoot').hidden=true;$('help').hidden=false};
+$('teamChip').onclick=()=>{$('introBox').classList.remove('full');$('help').hidden=false;$('closeHelp').focus()};
 $('help').addEventListener('click',e=>{if(e.target===$('help'))$('closeHelp').click()});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(!$('help').hidden){$('closeHelp').click();return}if(!$('show').hidden){$('closeShow').click();return}}
@@ -709,7 +800,8 @@ $('closeHelp').focus();
 // 새로고침해도 들어와 있던 모둠·단계로 바로 돌아가기
 (async()=>{try{
   const t=localStorage.getItem('jp-team'),st=localStorage.getItem('jp-step'),pl=JSON.parse(localStorage.getItem('jp-placed')||'[]');
-  if(t===null||!localStorage.getItem('jp-me')){restored=true;return}
+  if(t===null||(t!=='0'&&!localStorage.getItem('jp-me'))){restored=true;return}
+  if(t==='T'){restored=true;await openTeacher();return}
   await joinTeam(+t);
   if(st==='2'&&state.words.length){goStep(2);const m=tileMap();state.placed=pl.filter(k=>k===' '||m.has(k))}
   restored=true;renderBoard();renderTiles();
